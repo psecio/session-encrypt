@@ -12,6 +12,7 @@
             "homepage":"http://www.phpdeveloper.org/"
         }
     ],
+    "target-dir": "Psecio/SessionEncrypt",
     "autoload": {
         "psr-0": {
             "Psecio": "src/"
