@@ -22,3 +22,5 @@ session_start();
 The value for `$salt` should be as randomized as possible as it's used to encrypt the data with `mcrypt_decrypt`.
 The handler uses `MCRYPT_RIJNDAEL_256` and `MCRYPT_MODE_CBC` to encrypt the data.
 It will store the session files in the path defined by the `session.save_path` or, if it's not set, will default to `/tmp`.
+
+**NOTE:** Because of the need for encryption in this handler, you are *required* to have the `mcrypt` functionality included in your PHP installation.
