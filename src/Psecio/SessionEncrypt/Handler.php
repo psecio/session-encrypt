@@ -4,46 +4,56 @@ namespace Psecio\SessionEncrypt;
 
 class Handler
 {
-/**
+    /**
      * Path to save the sessions to
      * @var string
      */
-    private $savePathRoot = '/tmp';
+    private static $savePathRoot = '/tmp';
 
     /**
      * Save path of the saved path
      * @var string
      */
-    private $savePath = '';
+    private static $savePath = '';
 
     /**
      * Salt for hashing the session data
      * @var string
      */
-    private $key = '282edfcf5073666f3a7ceaa5e748cf8128bd53359b6d8269ba2450404face0ac';
+    private static $saltHash = null;
 
     /**
-     * Init the object, set up the session config handling
-     *
-     * @return null
+     * Current IV key
+     * @var string
      */
-    public function __construct($init = true)
-    {
-        if ($init === true) {
-        	$this->init();
-        }
-    }
+    private static $key = null;
 
-    public function init()
+    /**
+     * Initialize the session handler and set salt hash
+     * 
+     * @param string $saltHash Salt hash to init with
+     */
+    public static function init($saltHash = null)
     {
+        if ($saltHash !== null) {
+            self::$saltHash = $saltHash;
+        }
+        if (self::$saltHash === null) {
+            error_log('SESSION HANDLER: You must set a salt hash for the encryption!');
+        }
+
     	session_set_save_handler(
-            array($this, "open"), array($this, "close"),  array($this, "read"),
-            array($this, "write"),array($this, "destroy"),array($this, "gc")
+            array("\\Psecio\\SessionEncrypt\\Handler", "open"),
+            array("\\Psecio\\SessionEncrypt\\Handler", "close"),
+            array("\\Psecio\\SessionEncrypt\\Handler", "read"),
+            array("\\Psecio\\SessionEncrypt\\Handler", "write"),
+            array("\\Psecio\\SessionEncrypt\\Handler", "destroy"),
+            array("\\Psecio\\SessionEncrypt\\Handler", "gc")
         );
 
 		$savePath = ini_get('session.save_path');
 		if (!empty($savePath)) {
-			$this->savePathRoot = $savePath;
+			self::$savePathRoot = $savePath;
 		}
     }
 
@@ -53,12 +63,12 @@ class Handler
      * @param mixed $data Session data to encrypt
      * @return mixed $data Encrypted data
      */
-    private function encrypt($data)
+    private static function encrypt($data)
     {
         $ivSize  = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC);
         $iv      = mcrypt_create_iv($ivSize, MCRYPT_RAND);
         $keySize = mcrypt_get_key_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC);
-        $key     = substr(sha1($this->key), 0, $keySize);
+        $key     = substr(sha1(self::$key), 0, $keySize);
 
         // add in our IV and base64 encode the data
         $data    = base64_encode(
@@ -75,13 +85,13 @@ class Handler
      * @param mixed $data Data to decrypt
      * @return $data Decrypted data
      */
-    private function decrypt($data)
+    private static function decrypt($data)
     {
         $data    = base64_decode($data, true);
 
         $ivSize  = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC);
         $keySize = mcrypt_get_key_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC);
-        $key     = substr(sha1($this->key), 0, $keySize);
+        $key     = substr(sha1(self::$key), 0, $keySize);
 
         $iv   = substr($data, 0, $ivSize);
         $data = substr($data, $ivSize);
@@ -99,7 +109,7 @@ class Handler
      * @param string $key Key string
      * @return null
      */
-    public function setKey($key)
+    public static function setKey($key)
     {
         $this->key = $key;
     }
@@ -111,10 +121,10 @@ class Handler
      * @param mixed   $data Data to write to the log
      * @return null
      */
-    public function write($id, $data)
+    public static function write($id, $data)
     {
-        $path = $this->savePathRoot.'/'.$id;
-        $data = $this->encrypt($data);
+        $path = self::$savePathRoot.'/'.$id;
+        $data = self::encrypt($data);
 
         file_put_contents($path, $data);
     }
@@ -125,15 +135,15 @@ class Handler
      * @param string $id Session ID
      * @return null
      */
-    public function read($id)
+    public static function read($id)
     {
-        $path = $this->savePathRoot.'/'.$id;
+        $path = self::$savePathRoot.'/'.$id;
         $data = null;
 
         if (is_file($path)) {
             // get the data and extract the IV
             $data = file_get_contents($path);
-            $data = $this->decrypt($data);
+            $data = self::decrypt($data);
         }
         return $data;
     }
@@ -145,7 +155,7 @@ class Handler
      * @param string $sessionId Session ID
      * @return null
      */
-    public function open($savePath, $sessionId)
+    public static function open($savePath, $sessionId)
     {
         // open session, do nothing by default
     }
@@ -155,7 +165,7 @@ class Handler
      *
      * @return boolean Default return (true)
      */
-    public function close()
+    public static function close()
     {
         return true;
     }
@@ -166,9 +176,9 @@ class Handler
      * @param int $maxlifetime Lifetime in seconds
      * @return null
      */
-    public function gc($maxlifetime)
+    public static function gc($maxlifetime)
     {
-        $path = $this->savePathRoot.'/*';
+        $path = self::$savePathRoot.'/*';
 
         foreach (glob($path) as $file) {
             if (filemtime($file) + $maxlifetime < time() && file_exists($file)) {
@@ -185,7 +195,7 @@ class Handler
      * @param string $id Session ID
      * @return null
      */
-    public function destroy($id)
+    public static function destroy($id)
     {
         $path = $this->savePathRoot.'/'.$id;
         if (is_file($path)) {
