@@ -1,9 +1,9 @@
 {
-    "name":"psecio/SessionEncrypt",
+    "name":"psecio/session-encrypt",
     "type":"library",
     "description":"An encrypted session handler for PHP",
     "keywords":["session","encryption","encrypt","handler"],
-    "homepage":"https://github.com/psecio/SessionEncrypt.git",
+    "homepage":"https://github.com/psecio/session-encrypt.git",
     "license":"MIT",
     "authors":[
         {
