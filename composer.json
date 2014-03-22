@@ -13,7 +13,6 @@
         }
     ],
     "require": {
-        "ext-mcrypt": "*"
     },
     "target-dir": "Psecio/SessionEncrypt"
 }
