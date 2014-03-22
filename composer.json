@@ -15,10 +15,5 @@
     "require": {
         "ext-mcrypt": "*"
     },
-    "target-dir": "/src/Psecio/SessionEncrypt",
-    "autoload": {
-        "psr-0": {
-            "Psecio": "src/"
-        }
-    }
+    "target-dir": "Psecio/SessionEncrypt"
 }
