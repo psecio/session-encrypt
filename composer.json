@@ -1,0 +1,20 @@
+{
+    "name":"psecio/SessionEncrypt",
+    "type":"library",
+    "description":"An encrypted session handler for PHP",
+    "keywords":["session","encryption","encrypt","handler"],
+    "homepage":"https://github.com/psecio/SessionEncrypt.git",
+    "license":"MIT",
+    "authors":[
+        {
+            "name":"Chris Cornutt",
+            "email":"ccornutt@phpdeveloper.org",
+            "homepage":"http://www.phpdeveloper.org/"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "Psecio": "src/"
+        }
+    }
+}
