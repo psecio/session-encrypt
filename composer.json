@@ -12,6 +12,9 @@
             "homepage":"http://www.phpdeveloper.org/"
         }
     ],
+    "require": {
+        "ext/mcrypt": "*"
+    },
     "autoload": {
         "psr-0": {
             "Psecio": "src/"
